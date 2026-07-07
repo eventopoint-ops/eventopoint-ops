@@ -1,0 +1,4 @@
+project_id = "wrtdmolmcqppmgrpnvvi"
+
+[functions.parse-run-of-show]
+verify_jwt = false
