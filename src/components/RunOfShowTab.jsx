@@ -19,8 +19,31 @@ export default function RunOfShowTab({ event, tasks, teamMembers, onTasksChange 
   const [form, setForm] = useState(emptyForm)
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  // Which existing task's owner is currently being reassigned (null = none).
+  // This was missing entirely in the rebuild — the only place you could set
+  // an owner was the "Add Task" form, so there was no way to assign or
+  // change the owner on a task that already existed.
+  const [editingOwnerTaskId, setEditingOwnerTaskId] = useState(null)
+  const [assignError, setAssignError] = useState('')
 
   const memberName = (id) => teamMembers.find((m) => m.id === id)?.name || 'Unassigned'
+
+  const handleAssignOwner = async (task, newOwnerId) => {
+    const ownerId = newOwnerId || null
+    const { error } = await supabase
+      .from('tasks')
+      .update({ assigned_team_member_id: ownerId })
+      .eq('id', task.id)
+
+    if (error) {
+      setAssignError(`Could not assign team member: ${error.message}`)
+      return
+    }
+
+    setAssignError('')
+    setEditingOwnerTaskId(null)
+    onTasksChange(tasks.map((t) => (t.id === task.id ? { ...t, assigned_team_member_id: ownerId } : t)))
+  }
 
   const handleAddTask = async (e) => {
     e.preventDefault()
@@ -102,7 +125,26 @@ export default function RunOfShowTab({ event, tasks, teamMembers, onTasksChange 
                     {isOverdue(task) && <span style={styles.overdueBadge}>Overdue</span>}
                   </div>
                   <div style={styles.taskText}>{task.task}</div>
-                  <div style={styles.taskOwner}>{memberName(task.assigned_team_member_id)}</div>
+                  {editingOwnerTaskId === task.id ? (
+                    <select
+                      autoFocus
+                      value={task.assigned_team_member_id || ''}
+                      onChange={(e) => handleAssignOwner(task, e.target.value)}
+                      onBlur={() => setEditingOwnerTaskId(null)}
+                      style={styles.ownerSelect}
+                    >
+                      <option value="">Unassigned</option>
+                      {teamMembers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </select>
+                  ) : (
+                    <button
+                      type="button"
+                      style={styles.taskOwner}
+                      onClick={() => { setAssignError(''); setEditingOwnerTaskId(task.id) }}
+                    >
+                      {memberName(task.assigned_team_member_id)} · change
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -122,6 +164,7 @@ export default function RunOfShowTab({ event, tasks, teamMembers, onTasksChange 
       })}
 
       {tasks.length === 0 && <p style={styles.note}>No tasks yet — add one manually below, or use AI Import.</p>}
+      {assignError && <p style={styles.error}>{assignError}</p>}
 
       {showForm ? (
         <form onSubmit={handleAddTask} style={styles.form}>
@@ -222,7 +265,24 @@ const styles = {
     borderRadius: 2,
   },
   taskText: { fontSize: 14, marginBottom: 2 },
-  taskOwner: { fontSize: 12, color: B.inkLight },
+  taskOwner: {
+    fontSize: 12,
+    color: B.inkLight,
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    textUnderlineOffset: 2,
+    fontFamily: bodyFont,
+  },
+  ownerSelect: {
+    fontSize: 12,
+    padding: '4px 6px',
+    border: `1px solid ${B.border}`,
+    borderRadius: 4,
+    fontFamily: bodyFont,
+  },
   statusButton: {
     fontSize: 11,
     textTransform: 'uppercase',
