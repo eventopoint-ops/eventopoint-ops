@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — EVENToPOINT.ops</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=DM+Sans:wght@400;500;600&display=swap');
+    :root {
+      --ink: #0D0D0D;
+      --ink-mid: #333333;
+      --ink-light: #888888;
+      --bg: #FFFFFF;
+      --bg-off: #F7F7F7;
+      --border: #E0E0E0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'DM Sans', Arial, sans-serif;
+      color: var(--ink-mid);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+    .shell { max-width: 720px; margin: 0 auto; padding: 64px 24px 96px; }
+    h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 40px;
+      color: var(--ink);
+      margin: 0 0 8px;
+    }
+    .updated { color: var(--ink-light); font-size: 14px; margin-bottom: 40px; }
+    h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      border-top: 1px solid var(--border);
+      padding-top: 28px;
+      margin: 40px 0 12px;
+    }
+    p, li { font-size: 15px; }
+    ul { padding-left: 20px; }
+    a { color: var(--ink); }
+    .footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--ink-light); }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <h1>Privacy Policy</h1>
+    <p class="updated">EVENToPOINT.ops · Last updated August 2, 2026</p>
+
+    <p>
+      EVENToPOINT.ops ("the app", "we", "us") is an event-operations tool
+      built by EVENToPOINT for event planning and production teams. This
+      page explains what information the app collects, how it's used, and
+      who it's shared with.
+    </p>
+
+    <h2>Information we collect</h2>
+    <p>When you create an account and use the app, we collect:</p>
+    <ul>
+      <li><strong>Account information:</strong> your name and email address, either entered directly or provided by Google when you sign in with Google.</li>
+      <li><strong>Organization information:</strong> the name of your company or team.</li>
+      <li><strong>Event data you create:</strong> event names, dates, venues, run-of-show tasks, and any files you upload for AI import (for example, a run-of-show document).</li>
+      <li><strong>Team member information:</strong> names and roles of staff you add to an event, plus check-in status and timestamp if you use the staff check-in feature.</li>
+      <li><strong>Vendor information:</strong> vendor names, contacts, and any files you attach (contracts, insurance certificates, floor plans, etc.).</li>
+      <li><strong>Basic diagnostic information:</strong> if the app encounters an error, we log the error message and the page it happened on, to help us fix bugs. We do not log the content of your events, tasks, or files as part of this.</li>
+    </ul>
+
+    <h2>How we use AI</h2>
+    <p>
+      The "AI Import" feature extracts text from a run-of-show document you
+      upload and sends that text to Anthropic's Claude AI service to
+      convert it into structured tasks. Only the document text you
+      explicitly choose to import is sent — this happens when you use the
+      feature, not automatically. Anthropic processes this data under its
+      own API terms and does not use API data to train its models by
+      default.
+    </p>
+
+    <h2>Where your data is stored</h2>
+    <p>
+      Your data is stored in a Supabase-hosted PostgreSQL database and
+      file storage, located in the United States. Access is restricted so
+      that each organization can only see and access its own data — team
+      members from one organization cannot see another organization's
+      events, vendors, or files.
+    </p>
+
+    <h2>Who we share data with</h2>
+    <p>
+      We don't sell your data. We share it only with the service
+      providers that make the app work: Supabase (database, authentication,
+      and file storage), Netlify (hosting), and Anthropic (AI processing
+      for the Import feature, as described above). We may also disclose
+      information if required by law.
+    </p>
+
+    <h2>Your choices</h2>
+    <p>
+      You can update your account information from within the app. To
+      request deletion of your account or organization's data, email us at
+      the address below — we'll confirm what's being deleted and complete
+      the request within a reasonable time.
+    </p>
+
+    <h2>Children's privacy</h2>
+    <p>
+      EVENToPOINT.ops is a business tool intended for event industry
+      professionals and is not directed at, or knowingly used by, children
+      under 13.
+    </p>
+
+    <h2>Changes to this policy</h2>
+    <p>
+      If this policy changes in a material way, we'll update the date at
+      the top of this page.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions about this policy or your data? Email
+      <a href="mailto:e.konoshenko@eventopoint.com">e.konoshenko@eventopoint.com</a>.
+    </p>
+
+    <div class="footer">EVENToPOINT · eventopoint.com</div>
+  </div>
+</body>
+</html>

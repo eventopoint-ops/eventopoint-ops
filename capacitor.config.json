@@ -1,0 +1,9 @@
+{
+  "appId": "com.eventopoint.ops",
+  "appName": "EVENToPOINT",
+  "webDir": "dist",
+  "backgroundColor": "#FFFFFF",
+  "ios": {
+    "contentInset": "always"
+  }
+}
