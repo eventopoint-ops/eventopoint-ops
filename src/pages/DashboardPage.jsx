@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
 import { buildMonthGrid, MONTH_NAMES, WEEKDAY_LABELS, toDateString, todayString } from '../lib/calendar'
 import CreateEventModal from '../components/CreateEventModal'
+import BillingBanner from '../components/BillingBanner'
 import { B, displayFont, bodyFont } from '../lib/theme'
 
 // Dashboard: month calendar + full event list. Clicking an empty day
@@ -90,6 +91,8 @@ export default function DashboardPage({ onOpenEvent }) {
           Sign out
         </button>
       </header>
+
+      <BillingBanner />
 
       {errorMessage && <p style={styles.error}>{errorMessage}</p>}
 
