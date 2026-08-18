@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import RunOfShowTab from '../components/RunOfShowTab'
 import TeamTab from '../components/TeamTab'
 import VendorsTab from '../components/VendorsTab'
+import WrapUpTab from '../components/WrapUpTab'
 import AiImportModal from '../components/AiImportModal'
 import { B, displayFont, bodyFont } from '../lib/theme'
 
@@ -10,17 +11,22 @@ const TABS = [
   { key: 'runofshow', label: 'Run of Show' },
   { key: 'team', label: 'Team' },
   { key: 'vendors', label: 'Vendors' },
+  { key: 'wrapup', label: 'Wrap-Up' },
 ]
 
 // Event detail shell: header with back navigation, tab switcher, and the
-// three data-backed tabs. All three tabs' data is fetched once here and
-// passed down, rather than each tab independently re-querying — simpler
-// to reason about and avoids redundant network calls.
+// four data-backed tabs. All of it is fetched once here and passed down,
+// rather than each tab independently re-querying — simpler to reason
+// about and avoids redundant network calls.
 export default function EventDetailPage({ event, onBack }) {
   const [tab, setTab] = useState('runofshow')
   const [tasks, setTasks] = useState([])
   const [teamMembers, setTeamMembers] = useState([])
   const [vendors, setVendors] = useState([])
+  const [eventNotes, setEventNotes] = useState([])
+  const [eventReview, setEventReview] = useState(null)
+  const [staffRatings, setStaffRatings] = useState([])
+  const [vendorRatings, setVendorRatings] = useState([])
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [showAiImport, setShowAiImport] = useState(false)
@@ -29,13 +35,19 @@ export default function EventDetailPage({ event, onBack }) {
     setLoading(true)
     setErrorMessage('')
 
-    const [tasksRes, teamRes, vendorsRes] = await Promise.all([
+    const [tasksRes, teamRes, vendorsRes, notesRes, reviewRes, staffRatingsRes, vendorRatingsRes] = await Promise.all([
       supabase.from('tasks').select('*').eq('event_id', event.id).order('time', { ascending: true }),
       supabase.from('team_members').select('*').eq('event_id', event.id),
       supabase.from('vendors').select('*').eq('event_id', event.id),
+      supabase.from('event_notes').select('*').eq('event_id', event.id).order('created_at', { ascending: false }),
+      supabase.from('event_reviews').select('*').eq('event_id', event.id).maybeSingle(),
+      supabase.from('staff_ratings').select('*').eq('event_id', event.id),
+      supabase.from('vendor_ratings').select('*').eq('event_id', event.id),
     ])
 
-    const firstError = tasksRes.error || teamRes.error || vendorsRes.error
+    const firstError =
+      tasksRes.error || teamRes.error || vendorsRes.error || notesRes.error || reviewRes.error ||
+      staffRatingsRes.error || vendorRatingsRes.error
     if (firstError) {
       setErrorMessage(`Could not load event data: ${firstError.message}`)
       setLoading(false)
@@ -45,6 +57,10 @@ export default function EventDetailPage({ event, onBack }) {
     setTasks(tasksRes.data || [])
     setTeamMembers(teamRes.data || [])
     setVendors(vendorsRes.data || [])
+    setEventNotes(notesRes.data || [])
+    setEventReview(reviewRes.data || null)
+    setStaffRatings(staffRatingsRes.data || [])
+    setVendorRatings(vendorRatingsRes.data || [])
     setLoading(false)
   }, [event.id])
 
@@ -97,6 +113,23 @@ export default function EventDetailPage({ event, onBack }) {
           )}
           {tab === 'vendors' && (
             <VendorsTab event={event} vendors={vendors} onVendorsChange={setVendors} />
+          )}
+          {tab === 'wrapup' && (
+            <WrapUpTab
+              event={event}
+              teamMembers={teamMembers}
+              vendors={vendors}
+              notes={eventNotes}
+              review={eventReview}
+              staffRatings={staffRatings}
+              vendorRatings={vendorRatings}
+              onDataChange={(patch) => {
+                if (patch.notes) setEventNotes(patch.notes)
+                if (patch.review) setEventReview(patch.review)
+                if (patch.staffRatings) setStaffRatings(patch.staffRatings)
+                if (patch.vendorRatings) setVendorRatings(patch.vendorRatings)
+              }}
+            />
           )}
         </>
       )}
