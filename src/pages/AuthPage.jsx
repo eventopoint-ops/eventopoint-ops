@@ -1,21 +1,39 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { isNativePlatform } from '../lib/platform'
 import { B, displayFont, bodyFont } from '../lib/theme'
 
 // Login / signup screen. Supports email+password (the reliable path
 // throughout the old build's history) and Google OAuth.
 export default function AuthPage() {
-  const [mode, setMode] = useState('login') // 'login' | 'signup'
+  const [mode, setMode] = useState('login') // 'login' | 'signup' | 'forgot'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [status, setStatus] = useState('idle') // idle | working | error | check-email
+  const [status, setStatus] = useState('idle') // idle | working | error | check-email | reset-sent
   const [errorMessage, setErrorMessage] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('working')
     setErrorMessage('')
+
+    if (mode === 'forgot') {
+      // The recovery link has to land somewhere that can run the app. In
+      // the native builds window.location.origin is a capacitor:// or
+      // file:// origin the email client can't open, so those are sent to
+      // the web app instead -- reset there, then sign in here with the
+      // new password.
+      const redirectTo = isNativePlatform() ? 'https://eventopoint.app' : window.location.origin
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+      if (error) {
+        setStatus('error')
+        setErrorMessage(error.message)
+        return
+      }
+      setStatus('reset-sent')
+      return
+    }
 
     if (mode === 'signup') {
       const { error } = await supabase.auth.signUp({
@@ -41,6 +59,12 @@ export default function AuthPage() {
     // On success, onAuthStateChange in useAuth picks this up automatically.
   }
 
+  const switchMode = (next) => {
+    setMode(next)
+    setStatus('idle')
+    setErrorMessage('')
+  }
+
   const handleGoogle = async () => {
     setStatus('working')
     setErrorMessage('')
@@ -64,14 +88,14 @@ export default function AuthPage() {
         <div style={styles.tabRow}>
           <button
             type="button"
-            onClick={() => setMode('login')}
-            style={mode === 'login' ? styles.tabActive : styles.tab}
+            onClick={() => switchMode('login')}
+            style={mode === 'login' || mode === 'forgot' ? styles.tabActive : styles.tab}
           >
             Log in
           </button>
           <button
             type="button"
-            onClick={() => setMode('signup')}
+            onClick={() => switchMode('signup')}
             style={mode === 'signup' ? styles.tabActive : styles.tab}
           >
             Create account
@@ -82,6 +106,47 @@ export default function AuthPage() {
           <p style={styles.note}>
             Check your inbox for a confirmation link, then come back and log in.
           </p>
+        ) : status === 'reset-sent' ? (
+          <>
+            <p style={styles.note}>
+              If an account exists for {email}, a password reset link is on its
+              way. The link expires in an hour.
+            </p>
+            <button
+              type="button"
+              style={styles.linkButton}
+              onClick={() => switchMode('login')}
+            >
+              Back to log in
+            </button>
+          </>
+        ) : mode === 'forgot' ? (
+          <form onSubmit={handleSubmit}>
+            <p style={styles.note}>
+              Enter your email and we'll send you a link to set a new password.
+            </p>
+            <input
+              style={{ ...styles.input, marginTop: 16 }}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            {status === 'error' && <p style={styles.error}>{errorMessage}</p>}
+
+            <button type="submit" style={styles.primaryButton} disabled={status === 'working'}>
+              {status === 'working' ? 'Sending…' : 'Send reset link'}
+            </button>
+            <button
+              type="button"
+              style={styles.linkButton}
+              onClick={() => switchMode('login')}
+            >
+              Back to log in
+            </button>
+          </form>
         ) : (
           <form onSubmit={handleSubmit}>
             {mode === 'signup' && (
@@ -116,6 +181,16 @@ export default function AuthPage() {
             <button type="submit" style={styles.primaryButton} disabled={status === 'working'}>
               {status === 'working' ? 'Working…' : mode === 'login' ? 'Log in' : 'Create account'}
             </button>
+
+            {mode === 'login' && (
+              <button
+                type="button"
+                style={styles.linkButton}
+                onClick={() => switchMode('forgot')}
+              >
+                Forgot password?
+              </button>
+            )}
           </form>
         )}
 
@@ -193,6 +268,19 @@ const styles = {
     fontSize: 14,
     fontWeight: 600,
     cursor: 'pointer',
+  },
+  linkButton: {
+    display: 'block',
+    width: '100%',
+    marginTop: 12,
+    padding: 0,
+    background: 'transparent',
+    border: 'none',
+    color: B.inkMid,
+    fontSize: 13,
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    fontFamily: bodyFont,
   },
   error: { color: B.red, fontSize: 13, marginBottom: 12 },
   note: { color: B.inkMid, fontSize: 14, lineHeight: 1.5 },

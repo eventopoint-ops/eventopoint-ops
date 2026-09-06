@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { buildMonthGrid, MONTH_NAMES, WEEKDAY_LABELS, toDateString, todayString } from '../lib/calendar'
 import CreateEventModal from '../components/CreateEventModal'
 import BillingBanner from '../components/BillingBanner'
+import AccountModal from '../components/AccountModal'
 import { B, displayFont, bodyFont } from '../lib/theme'
 
 // Dashboard: month calendar + full event list. Clicking an empty day
@@ -20,6 +21,7 @@ export default function DashboardPage({ onOpenEvent }) {
   const [errorMessage, setErrorMessage] = useState('')
   const [modalPrefillDate, setModalPrefillDate] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [showAccount, setShowAccount] = useState(false)
 
   const loadEvents = useCallback(async () => {
     setLoading(true)
@@ -87,9 +89,18 @@ export default function DashboardPage({ onOpenEvent }) {
     <div style={styles.shell}>
       <header style={styles.header}>
         <h1 style={styles.logo}>EVENToPOINT.ops</h1>
-        <button type="button" style={styles.signOutButton} onClick={signOut}>
-          Sign out
-        </button>
+        <div style={styles.headerActions}>
+          <button
+            type="button"
+            style={styles.signOutButton}
+            onClick={() => setShowAccount(true)}
+          >
+            Account
+          </button>
+          <button type="button" style={styles.signOutButton} onClick={signOut}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <BillingBanner />
@@ -164,6 +175,8 @@ export default function DashboardPage({ onOpenEvent }) {
         ))}
       </section>
 
+      {showAccount && <AccountModal onClose={() => setShowAccount(false)} />}
+
       {showModal && (
         <CreateEventModal
           prefillDate={modalPrefillDate}
@@ -195,6 +208,7 @@ const styles = {
     fontSize: 24,
     margin: 0,
   },
+  headerActions: { display: 'flex', gap: 8, alignItems: 'center' },
   signOutButton: {
     background: 'transparent',
     border: `1px solid ${B.border}`,

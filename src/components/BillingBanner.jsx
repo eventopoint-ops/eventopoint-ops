@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
+import { isNativeIOS } from '../lib/platform'
 import { B, bodyFont } from '../lib/theme'
 
 // Reads organizations.subscription_status directly (not cached on profile)
@@ -69,6 +70,22 @@ export default function BillingBanner() {
 
   const activeStatuses = ['active', 'trialing']
   if (activeStatuses.includes(org.subscription_status)) return null
+
+  // On the native iOS build, state the subscription status but do not
+  // surface a call-to-action into an external purchase flow -- see the
+  // note on isNativeIOS() in lib/platform.js. Subscribing happens on
+  // eventopoint.app in a browser; the app itself keeps working either way.
+  if (isNativeIOS()) {
+    return (
+      <div style={styles.banner}>
+        <span style={styles.text}>
+          {org.subscription_status === 'past_due'
+            ? "Your last payment didn't go through. Your subscription needs attention."
+            : 'This organization does not have an active EVENToPOINT.ops subscription.'}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div style={styles.banner}>

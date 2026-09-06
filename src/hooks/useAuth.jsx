@@ -13,6 +13,18 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  // True while the user is arriving from a password-recovery email. The
+  // recovery token creates a real (short-lived) session, so without this
+  // flag App would drop them straight into the dashboard and they'd never
+  // reach the "set a new password" screen. Seeded from the URL as well as
+  // the auth event, because supabase-js consumes and strips the hash
+  // before onAuthStateChange fires in some flows.
+  const [recoveryMode, setRecoveryMode] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const hash = window.location.hash || ''
+    const search = window.location.search || ''
+    return hash.includes('type=recovery') || search.includes('type=recovery')
+  })
 
   const loadProfile = useCallback(async (userId) => {
     if (!userId) {
@@ -50,7 +62,8 @@ export function AuthProvider({ children }) {
       if (!cancelled) setLoading(false)
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (event === 'PASSWORD_RECOVERY') setRecoveryMode(true)
       setSession(newSession)
       await loadProfile(newSession?.user?.id)
     })
@@ -64,7 +77,18 @@ export function AuthProvider({ children }) {
   const refreshProfile = useCallback(() => loadProfile(session?.user?.id), [loadProfile, session])
 
   const signOut = useCallback(async () => {
+    setRecoveryMode(false)
     await supabase.auth.signOut()
+  }, [])
+
+  // Called once a new password has actually been saved, so the app stops
+  // holding the user on the recovery screen. Also clears the recovery
+  // fragment out of the address bar so a refresh doesn't re-trigger it.
+  const clearRecoveryMode = useCallback(() => {
+    setRecoveryMode(false)
+    if (typeof window !== 'undefined' && window.history?.replaceState) {
+      window.history.replaceState({}, '', window.location.pathname)
+    }
   }, [])
 
   const value = {
@@ -75,6 +99,8 @@ export function AuthProvider({ children }) {
     error,
     refreshProfile,
     signOut,
+    recoveryMode,
+    clearRecoveryMode,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

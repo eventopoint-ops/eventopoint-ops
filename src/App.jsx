@@ -5,6 +5,7 @@ import OnboardingPage from './pages/OnboardingPage'
 import DashboardPage from './pages/DashboardPage'
 import EventDetailPage from './pages/EventDetailPage'
 import CheckInPage from './pages/CheckInPage'
+import UpdatePasswordPage from './pages/UpdatePasswordPage'
 import { bodyFont } from './lib/theme'
 
 // The app has no URL router — every other screen is a client-side state
@@ -18,7 +19,7 @@ function getCheckInToken() {
 }
 
 function AppShell() {
-  const { session, profile, loading, error } = useAuth()
+  const { session, profile, loading, error, recoveryMode, clearRecoveryMode } = useAuth()
   const [selectedEvent, setSelectedEvent] = useState(null)
 
   if (loading) {
@@ -27,6 +28,13 @@ function AppShell() {
 
   if (error) {
     return <div style={{ padding: 40, fontFamily: bodyFont, color: '#CC3333' }}>{error}</div>
+  }
+
+  // Recovery is checked before everything else: the user holds a valid
+  // session at this point, but the only thing they're allowed to do with
+  // it is set a new password.
+  if (recoveryMode) {
+    return <UpdatePasswordPage onDone={clearRecoveryMode} />
   }
 
   if (!session) {
