@@ -28,13 +28,13 @@ caused a second rejection on the next round:
 
 ---
 
-## FILL IN BEFORE SUBMITTING
+## STATUS: ready to paste
 
-| Placeholder | What to put |
-|---|---|
-| `<DEMO_EMAIL>` | The account you're handing Apple |
-| `<DEMO_PASSWORD>` | Its password |
-| `<DEVICE>` / `<IOS_VERSION>` | The iPhone and iOS version you record on |
+Everything is filled in — demo account `e.konoshenko@eventopoint.com`,
+recorded on an iPhone 16 Pro Max running iOS 27.0.
+
+The one thing NOT written into this file is the password. Type it directly
+into App Store Connect's Password field, so it doesn't live in the repo.
 
 ---
 
@@ -42,8 +42,8 @@ caused a second rejection on the next round:
 
 Check **Sign-in required**, then:
 
-- **User name:** `<DEMO_EMAIL>`
-- **Password:** `<DEMO_PASSWORD>`
+- **User name:** `e.konoshenko@eventopoint.com`
+- **Password:** the password you set today — type it straight into App Store Connect
 
 This account already contains events, run-of-show tasks, team members and
 vendors, so the reviewer sees a working product rather than an empty state.
@@ -58,8 +58,8 @@ run-of-show, the people working it, and the vendors supplying it, in one
 place. There is no consumer-facing or user-to-user social component.
 
 DEMO ACCOUNT
-Username: <DEMO_EMAIL>
-Password: <DEMO_PASSWORD>
+Username: e.konoshenko@eventopoint.com
+Password: (see the Password field in App Store Connect above)
 This account is pre-populated with sample events, tasks, team members and
 vendors. No additional setup, hardware, or sample file is required to
 review any feature.
@@ -119,8 +119,8 @@ contacts, camera, microphone, notifications, or App Tracking Transparency.
 Vendor file uploads use the standard iOS document picker.
 
 DEVICES AND OS TESTED BEFORE SUBMISSION
-- <DEVICE> running iOS <IOS_VERSION> (physical device)
-- iPhone 16 Pro simulator, iOS <IOS_VERSION> (Xcode)
+- iPhone 16 Pro Max running iOS 27.0 (physical device)
+- iPhone 16 Pro simulator, iOS 27.0 (Xcode)
 
 EXTERNAL SERVICES USED
 - Supabase (supabase.com) — authentication, PostgreSQL database, file

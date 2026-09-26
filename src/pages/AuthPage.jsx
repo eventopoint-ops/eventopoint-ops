@@ -194,11 +194,21 @@ export default function AuthPage() {
           </form>
         )}
 
-        <div style={styles.divider}>or</div>
+        {/* Google refuses OAuth inside embedded webviews, which is exactly
+            what the native builds are, so the button can only ever fail
+            there -- it returns disallowed_useragent. Hidden until native
+            sign-in is implemented properly (system browser or a Google
+            Sign-In plugin plus signInWithIdToken). It works normally on
+            the web app. */}
+        {!isNativePlatform() && (
+          <>
+            <div style={styles.divider}>or</div>
 
-        <button type="button" style={styles.googleButton} onClick={handleGoogle}>
-          Continue with Google
-        </button>
+            <button type="button" style={styles.googleButton} onClick={handleGoogle}>
+              Continue with Google
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

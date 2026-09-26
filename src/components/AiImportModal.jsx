@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { loadMammoth } from '../lib/loadMammoth'
 import { B, bodyFont } from '../lib/theme'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const EDGE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-run-of-show`
 
 // AI Import: upload a .docx run-of-show, extract its text client-side
-// with mammoth.js, send it to the parse-run-of-show Edge Function (which
+// with mammoth.js (fetched on demand here rather than blocking every app
+// launch from index.html), send it to the parse-run-of-show Edge Function (which
 // holds the Anthropic key server-side — never call the AI API directly
 // from the browser), and insert the returned tasks.
 //
@@ -31,17 +33,15 @@ export default function AiImportModal({ event, teamMembers, onClose, onImported 
       setErrorMessage('Only .docx files are supported right now — PDF and legacy .doc are not yet.')
       return
     }
-    if (!window.mammoth) {
-      setStatus('error')
-      setErrorMessage('Document reader failed to load. Refresh the page and try again.')
-      return
-    }
 
     setStatus('extracting')
     const reader = new FileReader()
     reader.onload = async (evt) => {
       try {
-        const result = await window.mammoth.extractRawText({ arrayBuffer: evt.target.result })
+        // Fetched the first time anyone imports a document, not on every
+        // app launch. Surfaces its own error if the network is down.
+        const mammoth = await loadMammoth()
+        const result = await mammoth.extractRawText({ arrayBuffer: evt.target.result })
         await parseDocument(result.value || '')
       } catch (err) {
         setStatus('error')

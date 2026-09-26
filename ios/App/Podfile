@@ -21,4 +21,19 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+
+  # CapacitorCordova's headers use #include "CDVViewController.h" with
+  # quotes. Newer Xcode treats a quoted include inside a framework header
+  # as an error rather than a warning, so every `pod install` regenerates
+  # a Pods project that then fails to build with ~21 of them.
+  #
+  # Nothing in this app uses Cordova plugins -- CapacitorCordova is pulled
+  # in by Capacitor itself -- so downgrading this back to a warning for the
+  # pods only is safe, and it survives future pod installs because it lives
+  # here rather than being clicked into Xcode by hand.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+    end
+  end
 end

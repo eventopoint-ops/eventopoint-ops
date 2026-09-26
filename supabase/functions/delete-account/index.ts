@@ -125,12 +125,27 @@ Deno.serve(async (req: Request) => {
       }
 
       // events cascade to tasks, vendors, team_members, notes, reviews and
-      // ratings. team_members also hangs off org_id with NO ACTION, so any
-      // org-level rows left over have to go before the org itself.
+      // ratings. team_members and error_logs also hang off org_id, and
+      // profiles.org_id -> organizations is ON DELETE NO ACTION, so the
+      // caller's own profile row must go BEFORE the organization or the
+      // org delete fails and leaves an orphaned, member-less org behind.
+      // (That is exactly what happened on 2026-09-06: the account and its
+      // events were removed but the organization row survived.)
       await admin.from("events").delete().eq("org_id", orgId);
       await admin.from("team_members").delete().eq("org_id", orgId);
       await admin.from("error_logs").delete().eq("org_id", orgId);
-      await admin.from("organizations").delete().eq("id", orgId);
+      await admin.from("profiles").delete().eq("org_id", orgId);
+
+      const { error: orgDeleteError } = await admin
+        .from("organizations")
+        .delete()
+        .eq("id", orgId);
+      if (orgDeleteError) {
+        // Surface it rather than swallowing it. A failure here means the
+        // org is orphaned, which is a data-retention problem worth knowing
+        // about, not something to discover weeks later.
+        return jsonError(500, `Could not delete the organization: ${orgDeleteError.message}`);
+      }
     }
 
     // Clear the remaining NO ACTION references to this user. After an org

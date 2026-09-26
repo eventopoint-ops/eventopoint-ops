@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 // Central place for "who is signed in, and what org do they belong to."
@@ -26,7 +26,12 @@ export function AuthProvider({ children }) {
     return hash.includes('type=recovery') || search.includes('type=recovery')
   })
 
+  // Which user the currently held profile belongs to, so auth events that
+  // don't change the user don't trigger a redundant fetch.
+  const lastLoadedUserIdRef = useRef(null)
+
   const loadProfile = useCallback(async (userId) => {
+    lastLoadedUserIdRef.current = userId ?? null
     if (!userId) {
       setProfile(null)
       return
@@ -64,8 +69,19 @@ export function AuthProvider({ children }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (event === 'PASSWORD_RECOVERY') setRecoveryMode(true)
+
+      // Only re-read the profile when the person actually changed. This
+      // fires on TOKEN_REFRESHED and INITIAL_SESSION too -- every time the
+      // app is reopened and the token is silently refreshed -- and each of
+      // those was costing a round trip to fetch a profile we already had.
+      const previousUserId = lastLoadedUserIdRef.current
+      const nextUserId = newSession?.user?.id ?? null
+
       setSession(newSession)
-      await loadProfile(newSession?.user?.id)
+
+      if (nextUserId !== previousUserId) {
+        await loadProfile(nextUserId)
+      }
     })
 
     return () => {

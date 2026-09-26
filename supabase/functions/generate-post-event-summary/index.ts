@@ -138,7 +138,9 @@ IMPROVEMENTS ALREADY FLAGGED: ${review?.improvements_needed || "none"}`;
       },
       body: JSON.stringify({
         model: "claude-sonnet-5",
-        max_tokens: 1024,
+        max_tokens: 2048,
+        // No assistant prefill: this model rejects it outright with
+        // "This model does not support assistant message prefill."
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -150,14 +152,42 @@ IMPROVEMENTS ALREADY FLAGGED: ${review?.improvements_needed || "none"}`;
     }
 
     const anthropicJson = await anthropicRes.json();
-    const rawText = anthropicJson?.content?.[0]?.text ?? "";
+    const stopReason = anthropicJson?.stop_reason ?? "unknown";
+    const blockTypes = (anthropicJson?.content ?? []).map((c: { type?: string }) => c?.type).join(",");
+
+    // Read the first TEXT block rather than content[0]. The response's
+    // first block is not guaranteed to be text, and when it wasn't this
+    // silently produced an empty string and then threw on JSON.parse("")
+    // -- which is what users saw as "AI response was not in the expected
+    // format". parse-run-of-show already did this correctly.
+    const textBlock = (anthropicJson?.content ?? []).find(
+      (c: { type?: string }) => c?.type === "text"
+    ) as { text?: string } | undefined;
+
+    let rawText = textBlock?.text ?? "";
+
+    // Belt and braces: tolerate a fenced block or stray prose around the
+    // object rather than failing outright.
+    rawText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const firstBrace = rawText.indexOf("{");
+    const lastBrace = rawText.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      rawText = rawText.slice(firstBrace, lastBrace + 1);
+    }
 
     let parsed: { summary?: string; suggestions?: string };
     try {
       parsed = JSON.parse(rawText);
     } catch (_) {
-      await logDebug(`Could not parse AI response as JSON: ${rawText.slice(0, 500)}`);
+      await logDebug(
+        `Could not parse AI response as JSON (stop_reason=${stopReason}, blocks=[${blockTypes}]): ${rawText.slice(0, 500)}`
+      );
       return jsonError(502, "AI response was not in the expected format. Try again.");
+    }
+
+    if (!parsed.summary && !parsed.suggestions) {
+      await logDebug(`AI returned an empty summary (stop_reason=${stopReason}, blocks=[${blockTypes}])`);
+      return jsonError(502, "The AI returned an empty summary. Try again.");
     }
 
     const nowIso = new Date().toISOString();

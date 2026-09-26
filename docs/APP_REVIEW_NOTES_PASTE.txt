@@ -1,0 +1,43 @@
+EVENToPOINT.ops is a business tool for professional event production teams: event producers, venue and hotel event managers, production coordinators. It is the operations layer for running an event — the run-of-show, the people working it, the vendors supplying it. No consumer or social component.
+
+DEMO ACCOUNT
+Credentials are in the Sign-In Information fields above. It is pre-populated with events, tasks, team members and vendors. No extra setup or sample file is needed.
+
+HOW TO REACH THE MAIN FEATURES
+1. Launch the app and sign in.
+2. The dashboard opens on a month calendar. Tap an event in the list below it to open it. Tapping an empty day opens the create-event form.
+3. Inside an event: Run of Show, Team, Vendors and Wrap-Up tabs.
+- Run of Show: tasks grouped by phase (setup, event, post-event). Add tasks manually, mark them done; tasks past their time show an overdue badge.
+- AI Import (event header): upload a .docx run-of-show and it is parsed into tasks automatically. Optional — the demo event already has tasks.
+- Team: people working the event, each with a shareable check-in link. Opening it in a browser lets that person mark themselves on-site with no account or login.
+- Vendors: vendors with contracts and certificates attached as files.
+- Wrap-Up: post-event notes and an AI-generated summary.
+4. ACCOUNT DELETION: "Account" top-right of the dashboard, then "Delete my account", then type DELETE to confirm. This permanently deletes the account and, if the user is the last member of their organization, all of that organization's data. A second disposable account is provided so you can exercise this without removing the demo account: appreview.delete@eventopoint.com, same password as above.
+
+REGISTRATION AND PASSWORD RECOVERY
+Sign-up is by email and password, or Google sign-in, on the first screen, and is shown in the attached recording. A new account names its organization once, then reaches an empty dashboard. A "Forgot password?" link sends a recovery email leading to a set-a-new-password screen. Both accounts above are ready, so no sign-up email is needed to review.
+
+IN-APP PURCHASES
+None. No purchase flow, no paid unlock, and no link or call-to-action to an external purchase anywhere in the app. EVENToPOINT.ops is a multiplatform business service; organizations subscribe at https://eventopoint.app in a browser. The iOS app shows subscription status only and stays fully functional.
+
+USER-GENERATED CONTENT
+Created only by members of one organization for internal use: event names, task descriptions, team member names, vendor details, uploaded documents. No public feed, no discovery, no messaging between users, no way to see another organization's content. Every table is row-level scoped to the user's organization in the database.
+
+DEVICE PERMISSION PROMPTS
+None. No location, contacts, camera, microphone, notifications or App Tracking Transparency. Vendor file uploads use the standard iOS document picker.
+
+DEVICES AND OS TESTED
+- iPhone 16 Pro Max running iOS 27.0 (physical device)
+- iPhone 16 Pro simulator, iOS 27.0
+
+EXTERNAL SERVICES
+- Supabase — authentication, PostgreSQL database, file storage, serverless functions. All app data lives here.
+- Anthropic Claude API — parses uploaded run-of-show documents into tasks and generates the post-event summary. Called server-side from an Edge Function; no API key is in the app binary.
+- Netlify — hosts eventopoint.app, serving the public staff check-in page and the privacy policy.
+- Stripe — subscription billing, web only, not reachable from the iOS app.
+
+REGIONAL DIFFERENCES
+None. One feature set, in English, identical in every region and storefront. Nothing is geo-restricted or enabled based on location.
+
+REGULATED INDUSTRY / THIRD-PARTY MATERIAL
+Not a regulated industry. No health, financial, banking, gambling or government data. No third-party copyrighted or trademarked material; all branding, copy and design are original and owned by EVENToPOINT.
