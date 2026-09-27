@@ -4,15 +4,6 @@ import { useAuth } from '../hooks/useAuth'
 import { isNativeIOS } from '../lib/platform'
 import { B, bodyFont } from '../lib/theme'
 
-// Free-while-new window. The app is NOT gated during this period -- nothing
-// stops working, and the banner asks for feedback instead of money. When this
-// date passes the subscribe banner below comes back on its own, so turning
-// billing on later is a one-line change here, not a rewrite.
-const EARLY_ACCESS_ENDS = new Date('2027-01-01T00:00:00Z').getTime()
-const FEEDBACK_MAILTO =
-  'mailto:e.konoshenko@eventopoint.com?subject=' +
-  encodeURIComponent('EVENToPOINT.ops feedback')
-
 // Reads organizations.subscription_status directly (not cached on profile)
 // so it always reflects whatever the stripe-webhook edge function last
 // wrote. Those columns are locked to service-role writes only -- see
@@ -80,25 +71,6 @@ export default function BillingBanner() {
   const activeStatuses = ['active', 'trialing']
   if (activeStatuses.includes(org.subscription_status)) return null
 
-  const pastDue = org.subscription_status === 'past_due'
-
-  // past_due is real Stripe state and always deserves a message. Otherwise,
-  // during early access, ask for feedback rather than for $29 from someone
-  // who has not run an event yet.
-  if (!pastDue && Date.now() < EARLY_ACCESS_ENDS) {
-    return (
-      <div style={styles.banner}>
-        <span style={styles.text}>
-          EVENToPOINT.ops is free while it&rsquo;s new. If something is missing or
-          getting in your way, tell me &mdash; that&rsquo;s what shapes what I build next.
-        </span>
-        <a style={styles.buttonLink} href={FEEDBACK_MAILTO}>
-          Send feedback
-        </a>
-      </div>
-    )
-  }
-
   // On the native iOS build, state the subscription status but do not
   // surface a call-to-action into an external purchase flow -- see the
   // note on isNativeIOS() in lib/platform.js. Subscribing happens on
@@ -156,19 +128,6 @@ const styles = {
     fontWeight: 600,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
-  },
-  buttonLink: {
-    background: B.ink,
-    color: B.bg,
-    border: 'none',
-    borderRadius: 4,
-    padding: '8px 16px',
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    textDecoration: 'none',
-    display: 'inline-block',
   },
   error: { color: B.red, fontSize: 12, width: '100%' },
 }
