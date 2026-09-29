@@ -106,13 +106,7 @@ export default function EventDetailPage({ event, onBack }) {
       ) : (
         <>
           {tab === 'runofshow' && (
-            <RunOfShowTab
-              event={event}
-              tasks={tasks}
-              teamMembers={teamMembers}
-              onTasksChange={setTasks}
-              onAiImport={() => setShowAiImport(true)}
-            />
+            <RunOfShowTab event={event} tasks={tasks} teamMembers={teamMembers} onTasksChange={setTasks} />
           )}
           {tab === 'team' && (
             <TeamTab event={event} teamMembers={teamMembers} onTeamMembersChange={setTeamMembers} />

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { PHASES, CATEGORIES } from '../lib/phases'
 import { todayString } from '../lib/calendar'
-import { B, bodyFont, displayFont } from '../lib/theme'
+import { B, bodyFont } from '../lib/theme'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -14,7 +14,7 @@ const emptyForm = { time: '', task: '', ownerId: '', category: CATEGORIES[0], ph
 // with validation errors shown to the user instead of failing silently —
 // that silent-failure pattern was the root cause of the "nothing added"
 // and "nothing changed" bugs reported repeatedly against the old build.
-export default function RunOfShowTab({ event, tasks, teamMembers, onTasksChange, onAiImport }) {
+export default function RunOfShowTab({ event, tasks, teamMembers, onTasksChange }) {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [formError, setFormError] = useState('')
@@ -163,26 +163,7 @@ export default function RunOfShowTab({ event, tasks, teamMembers, onTasksChange,
         )
       })}
 
-      {/* Empty state. Four of the first four outside signups created an event
-          and stopped here: the old copy was one line of grey text that named
-          "AI Import" without being clickable, and the button itself sits in
-          the corner of the tab row. This puts the app's best feature in front
-          of them at the exact moment they have nothing yet. */}
-      {tasks.length === 0 && (
-        <div style={styles.empty}>
-          <h3 style={styles.emptyTitle}>Start with the run of show you already have</h3>
-          <p style={styles.emptyBody}>
-            Upload your run-of-show document and EVENToPOINT.ops turns it into a task
-            list — sorted by phase, with times and owners kept. Takes about a minute.
-          </p>
-          {onAiImport && (
-            <button type="button" style={styles.emptyCta} onClick={onAiImport}>
-              Upload run of show
-            </button>
-          )}
-          <p style={styles.emptyAlt}>or add tasks one at a time below</p>
-        </div>
-      )}
+      {tasks.length === 0 && <p style={styles.note}>No tasks yet — add one manually below, or use AI Import.</p>}
       {assignError && <p style={styles.error}>{assignError}</p>}
 
       {showForm ? (
@@ -314,45 +295,6 @@ const styles = {
   statusDone: { background: '#EAF7EE', borderColor: '#1A7F37', color: '#1A7F37' },
   statusIssue: { background: B.redBg, borderColor: B.red, color: B.red },
   note: { color: B.inkLight, fontSize: 14, marginBottom: 20 },
-  empty: {
-    border: `1px solid ${B.border}`,
-    borderRadius: 4,
-    background: B.bgOff,
-    padding: '30px 24px',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  emptyTitle: {
-    fontFamily: displayFont,
-    fontSize: 25,
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: '0.02em',
-    color: B.ink,
-    margin: 0,
-  },
-  emptyBody: {
-    fontFamily: bodyFont,
-    color: B.inkMid,
-    fontSize: 14,
-    lineHeight: 1.55,
-    margin: '12px auto 20px',
-    maxWidth: 400,
-  },
-  emptyCta: {
-    fontFamily: bodyFont,
-    background: B.ink,
-    color: B.bg,
-    border: 'none',
-    borderRadius: 4,
-    padding: '14px 28px',
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: 'pointer',
-    width: '100%',
-    maxWidth: 320,
-  },
-  emptyAlt: { fontFamily: bodyFont, color: B.inkLight, fontSize: 13, margin: '16px 0 0' },
   addButton: {
     width: '100%',
     padding: '12px 0',
